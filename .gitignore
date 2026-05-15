@@ -141,3 +141,13 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+
+# compiled output
+/dist
+/node_modules
+/build
+/src/generated/prisma
+dev.db-shm
+dev.db-wal
+prisma/migrations
