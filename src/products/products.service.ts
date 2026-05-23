@@ -12,7 +12,6 @@ export class ProductsService {
     const productCreated = await this.prismaService.product.create({
       data: createProductDto,
     });
-    console.debug(productCreated);
     return productCreated;
   }
 

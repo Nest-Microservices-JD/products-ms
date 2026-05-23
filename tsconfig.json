@@ -24,7 +24,7 @@
 
   "exclude": ["node_modules", "dist"],
 
-"watchOptions": {
+  "watchOptions": {
     "watchFile": "dynamicPriorityPolling",
     "watchDirectory": "dynamicPriorityPolling",
     "fallbackPolling": "dynamicPriority",

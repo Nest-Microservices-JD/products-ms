@@ -1,0 +1,61 @@
+# ===============================================
+# Dependencies
+# ===============================================
+
+FROM node:24-alpine3.23 AS deps
+
+WORKDIR /usr/src/app
+
+COPY package.json ./
+COPY package-lock.json ./
+
+RUN npm install
+
+# ===============================================
+# Build
+# ===============================================
+
+FROM node:24-alpine3.23 AS build
+
+WORKDIR /usr/src/app
+
+# coping from deps stage
+COPY --from=deps /usr/src/app/node_modules ./node_modules
+
+# coping from code application
+COPY . .
+
+# RUN npm run test
+RUN npm run build && npm ci -f --only=production && npm cache clean --force
+
+# Prisma client is generated during local development and compiled into dist/src/generated
+# Skipping `npx prisma generate` in build to avoid requiring devDependencies at build time
+# ===============================================
+# Image
+# ===============================================
+
+FROM node:24-alpine3.23 AS prod
+
+WORKDIR /usr/src/app
+
+COPY --from=build /usr/src/app/node_modules ./node_modules
+
+COPY --from=build /usr/src/app/dist ./dist
+
+COPY prisma ./prisma
+COPY --from=build /usr/src/app/dev.db ./dev.db
+COPY --from=build /usr/src/app/dev.db-shm ./dev.db-shm
+COPY --from=build /usr/src/app/dev.db-wal ./dev.db-wal
+
+ENV NODE_ENV=production
+
+# Create entrypoint script for running migrations
+# Ensure proper permissions for node user
+RUN chown -R node:node /usr/src/app
+
+USER node
+
+EXPOSE 3000
+
+# Run migrations (best-effort) then start the app. Using a shell avoids creating an entrypoint file
+CMD ["node", "dist/src/main.js"]
