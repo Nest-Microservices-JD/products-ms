@@ -24,7 +24,7 @@ COPY --from=deps /usr/src/app/node_modules ./node_modules
 
 # coping from code application
 COPY . .
-
+RUN npx prisma generate
 # RUN npm run test
 RUN npm run build && npm ci -f --only=production && npm cache clean --force
 
